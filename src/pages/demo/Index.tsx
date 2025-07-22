@@ -19,7 +19,6 @@ import React, {
   // useNavigate,
 } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 // Context 用法
 const MyContext = createContext("默认值");
@@ -92,7 +91,7 @@ function App() {
   // useSyncExternalStore
   // 简单演示：每次 count 变化时 snapshot 也变化
   const store = {
-    subscribe: (cb: () => void) => {
+    subscribe: (_cb: () => void) => {
       // 这里没有真正的外部 store，仅演示
       return () => {};
     },
@@ -102,9 +101,6 @@ function App() {
 
   // useTransition
   const [isPending, startTransition] = useTransition();
-
-  // useNavigate - 必须在组件顶层调用
-  const navigate = useNavigate();
 
   const handleTransition = () => {
     startTransition(() => {
