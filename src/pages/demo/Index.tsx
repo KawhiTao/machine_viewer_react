@@ -14,25 +14,21 @@ import React, {
   useTransition,
   useDeferredValue,
   useInsertionEffect,
-  // forwardRef,
+  forwardRef,
   createContext,
+  useActionState,
   // useNavigate,
 } from "react";
+
+import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 
 // Context 用法
 const MyContext = createContext("默认值");
 
-// 自定义输入框组件，演示 useImperativeHandle
-function MyInput(props: { ref?: React.Ref<{ focus: () => void }> }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // 暴露 focus 方法给父组件
-  useImperativeHandle(props.ref, () => ({
-    focus: () => inputRef.current?.focus(),
-  }));
-
-  return <input ref={inputRef} placeholder="点击下方按钮自动聚焦" />;
+// 自定义输入框组件，使用 forwardRef 直接转发 ref
+function MyInput({ ref }) {
+  return <input ref={ref} placeholder="点击下方按钮自动聚焦" />;
 }
 
 function App() {
@@ -79,8 +75,8 @@ function App() {
     action.type === "add" ? state + 1 : state - 1;
   const [state, dispatch] = useReducer(reducer, 0);
 
-  // useImperativeHandle
-  const myInputRef = useRef<{ focus: () => void }>(null);
+  // useImperativeHandle - 现在直接使用 HTMLInputElement ref
+  const myInputRef = useRef<HTMLInputElement>(null);
 
   // useDebugValue
   useDebugValue(count > 5 ? "大于5" : "小于等于5");
@@ -121,7 +117,7 @@ function App() {
   }, []);
 
   return (
-    <MyContext.Provider value="Hello Context">
+    <MyContext value="Hello Context">
       <div style={{ padding: 24 }}>
         <h2>React 常用 Hooks 演示</h2>
         <p>useState: {count}</p>
@@ -165,7 +161,7 @@ function App() {
         <hr />
         <p>useInsertionEffect: 请看控制台</p>
       </div>
-    </MyContext.Provider>
+    </MyContext>
   );
 }
 

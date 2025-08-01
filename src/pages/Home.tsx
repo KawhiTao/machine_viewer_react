@@ -1,14 +1,25 @@
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
+// import ImageUploadAnnotation from "@/components/ImageUploadAnnotation";
+// import { Card, CardContent } from "@/components/ui/card";
+// import { Badge } from "@/components/ui/badge";
+// import { Checkbox } from "@/components/ui/checkbox";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+// import { DateTimePicker } from "@/components/ui/date-time-picker";
+// import { useState } from "react";
 
 function Home() {
-  const navigate = useNavigate();
+  // const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  // const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+
   return (
-    <div className="flex flex-col items-center justify-center h-full bg-background text-foreground">
-      <h1 className="text-4xl font-bold mb-4">Welcome to the Home Page</h1>
-      <p className="text-lg bg-warning-foreground text-warning">
-        This is a simple home page built with React and Tailwind CSS.
-      </p>
-      <p onClick={() => navigate("/demo")}>click me 2 demo</p>
+    <div className="overflow-auto p-4 flex h-full">
+      <main className="flex-1">TODO：待开发</main>
     </div>
   );
 }

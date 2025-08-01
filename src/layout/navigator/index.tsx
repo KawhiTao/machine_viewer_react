@@ -2,72 +2,35 @@
 
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CircleCheckIcon, CircleHelpIcon, CircleIcon } from "lucide-react";
+import { CircleHelpIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+import { getNavigationRoutes } from "@/config/routes";
+import { Button } from "@/components/ui/button";
 
-import { ModeToggle } from "@/components/mode-toggle";
+interface NavigationMenuDemoProps {
+  isCollapsed?: boolean;
+  onToggleCollapse?: (collapsed: boolean) => void;
+}
 
-const components: { title: string; href: string; description: string }[] = [
-  {
-    title: "Alert Dialog",
-    href: "/docs/primitives/alert-dialog",
-    description:
-      "A modal dialog that interrupts the user with important content and expects a response.",
-  },
-  {
-    title: "Hover Card",
-    href: "/docs/primitives/hover-card",
-    description:
-      "For sighted users to preview content available behind a link.",
-  },
-  {
-    title: "Progress",
-    href: "/docs/primitives/progress",
-    description:
-      "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-  },
-  {
-    title: "Scroll-area",
-    href: "/docs/primitives/scroll-area",
-    description: "Visually or semantically separates content.",
-  },
-  {
-    title: "Tabs",
-    href: "/docs/primitives/tabs",
-    description:
-      "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-  },
-  {
-    title: "Tooltip",
-    href: "/docs/primitives/tooltip",
-    description:
-      "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-  },
-];
+export function NavigationMenuDemo({
+  isCollapsed = false,
+  onToggleCollapse,
+}: NavigationMenuDemoProps) {
+  const [internalCollapsed, setInternalCollapsed] = React.useState(isCollapsed);
 
-export function NavigationMenuDemo() {
-  const [isScrolled, setIsScrolled] = React.useState(false);
+  const collapsed = onToggleCollapse ? isCollapsed : internalCollapsed;
+
+  const handleToggleCollapse = () => {
+    const newCollapsed = !collapsed;
+    if (onToggleCollapse) {
+      onToggleCollapse(newCollapsed);
+    } else {
+      setInternalCollapsed(newCollapsed);
+    }
+  };
   const location = useLocation();
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      setIsScrolled(scrollTop > 80);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const navigationItems = getNavigationRoutes();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -75,256 +38,122 @@ export function NavigationMenuDemo() {
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 z-50 ${
-        isScrolled ? "px-8 py-4" : "px-0 py-0"
-      }`}
-      style={{ pointerEvents: isScrolled ? "none" : "auto" }}
+      className={`${collapsed ? "w-20" : "w-64"} bg-card border-r border-border flex flex-col h-full transition-all duration-300 relative`}
+      style={{
+        boxShadow:
+          "2px 0 8px rgba(0, 0, 0, 0.04), 1px 0 4px rgba(0, 0, 0, 0.03), 0px 0 2px rgba(0, 0, 0, 0.02)",
+      }}
     >
-      <NavigationMenu
-        className={`flex w-full nav-smooth-transition shadow-accent ${
-          isScrolled
-            ? "nav-capsule px-8 py-3 mx-auto max-w-fit"
-            : "bg-background p-4 shadow-sm w-full"
-        }`}
-        viewport={false}
-        style={{ pointerEvents: "auto" }}
-      >
-        <NavigationMenuList className="flex flex-row items-center">
-          <NavigationMenuItem>
-            <NavigationMenuLink
-              asChild
+      {/* 标题区域 */}
+      <div className="h-[73px] flex items-center px-4 border-b border-border">
+        {collapsed ? (
+          <div className="flex justify-center w-full">
+            <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">
+                视
+              </span>
+            </div>
+          </div>
+        ) : (
+          <h1 className="text-xl font-bold text-foreground">视图一体化系统</h1>
+        )}
+      </div>
+
+      {/* 导航菜单 */}
+      <nav className="flex-1 p-2">
+        <ul className="space-y-0">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.path);
+
+            return (
+              <li key={item.path}>
+                <Link
+                  to={item.path}
+                  className={cn(
+                    "flex items-center rounded-md text-sm font-medium transition-colors group relative",
+                    "hover:bg-accent hover:text-accent-foreground",
+                    active
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground",
+                    collapsed
+                      ? "w-12 h-12 p-0 justify-center items-center flex"
+                      : "gap-3 px-4 py-4",
+                  )}
+                  title={collapsed ? item.title : undefined}
+                >
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  {!collapsed && <span>{item.title}</span>}
+
+                  {/* 折叠状态下的悬浮提示 */}
+                  {collapsed && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+                      {item.title}
+                    </div>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* 底部区域 */}
+      <div className="p-2 border-t border-border">
+        {collapsed ? (
+          <div className="flex flex-col items-center space-y-1">
+            <Link
+              to="/help"
               className={cn(
-                navigationMenuTriggerStyle(),
-                isActive("/") && "bg-accent text-accent-foreground",
+                "flex items-center justify-center w-12 h-12 p-0 rounded-md text-sm font-medium transition-colors group relative",
+                "hover:bg-accent hover:text-accent-foreground text-muted-foreground",
+              )}
+              title="帮助"
+            >
+              <CircleHelpIcon className="h-5 w-5" />
+              <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+                帮助
+              </div>
+            </Link>
+            <div className="flex justify-center">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleToggleCollapse}
+                title="展开导航栏"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <Link
+              to="/help"
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                "hover:bg-accent hover:text-accent-foreground text-muted-foreground",
               )}
             >
-              <Link to="/">
-                <span
-                  className={`font-semibold transition-all duration-500 ${
-                    isScrolled ? "text-base" : "text-lg"
-                  }`}
-                >
-                  视图大模型
-                </span>
-              </Link>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-
-          {!isScrolled && (
-            <>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    isActive("/auto") && "bg-accent text-accent-foreground",
-                  )}
-                >
-                  <Link to="/auto">自动检测</Link>
-                </NavigationMenuLink>
-                {/* <NavigationMenuTrigger>Components</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-2 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {components.map((component) => (
-                      <ListItem
-                        key={component.title}
-                        title={component.title}
-                        href={component.href}
-                      >
-                        {component.description}
-                      </ListItem>
-                    ))}
-                  </ul>
-                </NavigationMenuContent> */}
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    isActive("/search") && "bg-accent text-accent-foreground",
-                  )}
-                >
-                  <Link to="/search">以文搜图</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    isActive("/online") && "bg-accent text-accent-foreground",
-                  )}
-                >
-                  <Link to="/online">在线微调</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    isActive("/video") && "bg-accent text-accent-foreground",
-                  )}
-                >
-                  <Link to="/video">视频解析</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    isActive("/demo") && "bg-accent text-accent-foreground",
-                  )}
-                >
-                  <Link to="/demo">demo</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>List</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[300px] gap-4">
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <Link to="#">
-                          <div className="font-medium">Components</div>
-                          <div className="text-muted-foreground">
-                            Browse all components in the library.
-                          </div>
-                        </Link>
-                      </NavigationMenuLink>
-                      <NavigationMenuLink asChild>
-                        <Link to="#">
-                          <div className="font-medium">Documentation</div>
-                          <div className="text-muted-foreground">
-                            Learn how to use the library.
-                          </div>
-                        </Link>
-                      </NavigationMenuLink>
-                      <NavigationMenuLink asChild>
-                        <Link to="#">
-                          <div className="font-medium">Blog</div>
-                          <div className="text-muted-foreground">
-                            Read our latest blog posts.
-                          </div>
-                        </Link>
-                      </NavigationMenuLink>
-                    </li>
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Simple</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[200px] gap-4">
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <Link to="#">Components</Link>
-                      </NavigationMenuLink>
-                      <NavigationMenuLink asChild>
-                        <Link to="#">Documentation</Link>
-                      </NavigationMenuLink>
-                      <NavigationMenuLink asChild>
-                        <Link to="#">Blocks</Link>
-                      </NavigationMenuLink>
-                    </li>
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>With Icon</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[200px] gap-4">
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <Link to="#" className="flex-row items-center gap-2">
-                          <CircleHelpIcon />
-                          Backlog
-                        </Link>
-                      </NavigationMenuLink>
-                      <NavigationMenuLink asChild>
-                        <Link to="#" className="flex-row items-center gap-2">
-                          <CircleIcon />
-                          To Do
-                        </Link>
-                      </NavigationMenuLink>
-                      <NavigationMenuLink asChild>
-                        <Link to="#" className="flex-row items-center gap-2">
-                          <CircleCheckIcon />
-                          Done
-                        </Link>
-                      </NavigationMenuLink>
-                    </li>
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            </>
-          )}
-
-          {isScrolled && (
-            <>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    isActive("/demo") && "bg-accent text-accent-foreground",
-                  )}
-                >
-                  <Link to="/demo">Demo</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  asChild
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    isActive("/docs") && "bg-accent text-accent-foreground",
-                  )}
-                >
-                  <Link to="/docs">Docs</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            </>
-          )}
-        </NavigationMenuList>
-
-        <div className="flex items-center space-x-2 ml-auto">
-          <ModeToggle />
-        </div>
-      </NavigationMenu>
+              <CircleHelpIcon className="h-5 w-5" />
+              帮助
+            </Link>
+            <div className="flex items-center">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleToggleCollapse}
+                title="折叠导航栏"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function ListItem({
-  title,
-  children,
-  href,
-  ...props
-}: React.ComponentPropsWithoutRef<"li"> & { href: string }) {
-  return (
-    <li {...props}>
-      <NavigationMenuLink asChild>
-        <Link to={href}>
-          <div className="text-sm leading-none font-medium">{title}</div>
-          <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
-            {children}
-          </p>
-        </Link>
-      </NavigationMenuLink>
-    </li>
-  );
-}
-export {
-  ListItem,
-  components,
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-};
+// 导出兼容性组件和工具
+export { getNavigationRoutes };
