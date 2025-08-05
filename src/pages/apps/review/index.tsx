@@ -9,6 +9,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { Bar, BarChart, ResponsiveContainer } from "recharts";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+import { Input } from "@/components/ui/input";
+
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { useState, useEffect, useRef, useMemo } from "react";
 import {
@@ -19,8 +46,12 @@ import {
   Check,
   Loader2,
   AlertCircle,
+  Cog,
+  X,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Uploader from "@/pages/apps/review/Uploader";
+// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 function Review() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -170,7 +201,7 @@ function Review() {
       setError(null);
       try {
         // 模拟API调用
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 200));
 
         // 模拟偶发性网络错误（已禁用）
         // if (Math.random() < 0.01) {
@@ -300,18 +331,22 @@ function Review() {
   );
 
   const ListItemSkeleton = () => (
-    <Card>
-      <CardContent className="p-4">
+    <Card className="py-0 !gap-0 border-0 shadow-sm">
+      <CardContent className="p-3">
         <div className="flex items-center gap-4">
           <Skeleton className="h-4 w-4 rounded" />
-          <Skeleton className="h-24 w-32 rounded" />
-          <div className="flex-1 space-y-2">
-            <div className="flex justify-between items-center">
-              <Skeleton className="h-5 w-24" />
-              <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-12 w-16 rounded" />
+          <div className="flex-1">
+            <Skeleton className="h-4 w-24 mb-1" />
+            <Skeleton className="h-3 w-32 mb-1" />
+            <Skeleton className="h-3 w-28" />
+          </div>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <div className="flex gap-2">
+              <Skeleton className="h-8 w-8 rounded" />
+              <Skeleton className="h-8 w-8 rounded" />
             </div>
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-40" />
           </div>
         </div>
       </CardContent>
@@ -339,12 +374,14 @@ function Review() {
     setSelectAll(!selectAll);
   };
 
-  // 分页计算
-  // const currentItemsPerPage = viewMode === "grid" ? 12 : 10;
-  // const totalPages = Math.ceil(mockEvents.length / currentItemsPerPage);
-  // const startIndex = (currentPage - 1) * currentItemsPerPage;
-  // const endIndex = startIndex + currentItemsPerPage;
-  // const currentEvents = mockEvents.slice(startIndex, endIndex);
+  const [isAutoReview, setIsAutoReview] = useState<boolean>(true);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+
+  // 处理自动审核
+  const handleAutoReviewChange = (checked: boolean) => {
+    setIsAutoReview(checked);
+    setIsPopoverOpen(false); // 关闭Popover
+  };
 
   // 切换视图模式
   const handleViewModeChange = (mode: "grid" | "list") => {
@@ -357,12 +394,6 @@ function Review() {
         <div className="h-full overflow-y-auto pr-2">
           {/* 常规筛选 */}
           <div className="space-y-4">
-            <Card className="rounded-md !gap-0 border-0 shadow-sm">
-              <CardContent className="px-3 leading-0">
-                <h3 className="font-medium text-foreground">常规筛选</h3>
-              </CardContent>
-            </Card>
-
             {/* 方位选择 */}
             <div className="space-y-3">
               <Card className="rounded-md py-3 !gap-0 border-0 shadow-sm">
@@ -526,11 +557,164 @@ function Review() {
               <Check className="h-4 w-4" />
               全选
             </Button>
+            {/* 开关 */}
+            <div className="flex items-center gap-2">
+              {/*<Switch
+                checked={isAutoReview}
+                onCheckedChange={handleAutoReviewChange}
+                className="ml-2"
+              />*/}
+              {/*<HoverCard openDelay={100} closeDelay={500}>
+                <HoverCardTrigger>
+                  <Label className="hover:underline underline-offset-3">
+                    AI自动图审
+                  </Label>
+                </HoverCardTrigger>
+                <HoverCardContent sideOffset={12}>
+                  每一小时自动图审
+                </HoverCardContent>
+              </HoverCard>*/}
+              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="relative">
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            isAutoReview
+                              ? "bg-green-500 dark:bg-green-400"
+                              : "bg-gray-400 dark:bg-gray-500"
+                          } ${
+                            isAutoReview
+                              ? "animate-pulse"
+                              : "animate-pulse opacity-60"
+                          }`}
+                        />
+                        {isAutoReview && (
+                          <div className="absolute inset-0 w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 animate-ping opacity-75" />
+                        )}
+                      </div>
+                      {/*<Cog className="h-4 w-4" />*/}
+                      <span>AI自动图审</span>
+                    </div>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2">
+                        <Cog className="h-5 w-5" />
+                        <h4 className="leading-none font-medium">设置</h4>
+                      </div>
+                      <p className="text-muted-foreground text-sm">
+                        配置自动图审规则
+                      </p>
+                    </div>
+                    <div className="grid gap-2">
+                      <div className="grid grid-cols-3 items-center gap-4">
+                        <Label htmlFor="hour">每小时</Label>
+                        <Input
+                          id="hour"
+                          defaultValue="1"
+                          className="col-span-2 h-8"
+                          type="number"
+                          min={0}
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 items-center gap-4">
+                        <Label htmlFor="minute">每分钟</Label>
+                        <Input
+                          id="minute"
+                          defaultValue="30"
+                          className="col-span-2 h-8"
+                          type="number"
+                          min={0}
+                        />
+                      </div>
+                      <div className="grid grid-cols-3 items-center gap-4">
+                        <Label htmlFor="height">秒</Label>
+                        <Input
+                          id="height"
+                          defaultValue="0"
+                          className="col-span-2 h-8"
+                          type="number"
+                          min={0}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 items-center gap-4 justify-center">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleAutoReviewChange(true)}
+                        >
+                          开启
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleAutoReviewChange(false)}
+                        >
+                          关闭
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
-          <Button variant="outline" size="sm">
-            开始图审
-          </Button>
+          <div className="gap-4 flex flex-row">
+            <Drawer direction="right">
+              <DrawerTrigger asChild>
+                <Button variant="default" size="sm">
+                  手动上传
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <div className="mx-auto w-full max-w-full h-full flex flex-col">
+                  <DrawerHeader>
+                    <DrawerTitle>人工图片上传</DrawerTitle>
+                    <DrawerDescription>手动上传图片进行识别</DrawerDescription>
+                    <DrawerClose asChild className="absolute right-4 top-4">
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </DrawerClose>
+                  </DrawerHeader>
+                  <div className="p-4 pb-0 h-[calc(100%-100px)]">
+                    <Uploader></Uploader>
+                    {/*<div className="flex items-center justify-center space-x-2"></div>
+                    <div className="mt-3 h-[120px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart>
+                          <Bar
+                            dataKey="goal"
+                            style={
+                              {
+                                fill: "hsl(var(--foreground))",
+                                opacity: 0.9,
+                              } as React.CSSProperties
+                            }
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>*/}
+                  </div>
+                  {/*<DrawerFooter>
+                    <Button>Submit</Button>
+                    <DrawerClose asChild>
+                      <Button variant="outline">Cancel</Button>
+                    </DrawerClose>
+                  </DrawerFooter>*/}
+                </div>
+              </DrawerContent>
+            </Drawer>
+
+            <Button variant="outline" size="sm">
+              开始图审
+            </Button>
+          </div>
         </div>
 
         {/* 事件展示区域 */}

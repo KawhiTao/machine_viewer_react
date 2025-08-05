@@ -21,6 +21,7 @@ const Demo = lazy(() => import("@/pages/demo"));
 const Review = lazy(() => import("@/pages/apps/review"));
 const AppMarket = lazy(() => import("@/pages/apps/AppMarket"));
 const Management = lazy(() => import("@/pages/management"));
+const AgentText = lazy(() => import("@/pages/agent/Text"));
 
 // 路由配置类型定义
 export interface RouteConfig {
@@ -61,41 +62,42 @@ export const routesConfig: RouteConfig[] = [
     path: "/ai",
     title: "AI文搜",
     icon: BrainCircuitIcon,
-    redirect: "/ai/text",
+    // redirect: "/ai/text",
+    component: AgentText,
     meta: {
       keepAlive: true,
       order: 2,
     },
-    children: [
-      {
-        path: "/ai/text",
-        title: "交通文本模型",
-        icon: BrainCircuitIcon,
-        // component: Demo,
-        meta: {
-          keepAlive: true,
-        },
-      },
-      {
-        path: "/ai/language",
-        title: "交通语言模型",
-        icon: SearchIcon,
-        // component: Search,
-        meta: {
-          keepAlive: true,
-          disabled: false, // 可以设置为 true 来禁用此菜单项
-        },
-      },
-      {
-        path: "/ai/video",
-        title: "视频识别模型",
-        icon: SearchIcon,
-        // component: Search,
-        meta: {
-          keepAlive: true,
-        },
-      },
-    ],
+    // children: [
+    //   {
+    //     path: "/ai/text",
+    //     title: "交通文本模型",
+    //     icon: BrainCircuitIcon,
+    //     component: AgentText,
+    //     meta: {
+    //       keepAlive: true,
+    //     },
+    //   },
+    //   {
+    //     path: "/ai/language",
+    //     title: "交通语言模型",
+    //     icon: SearchIcon,
+    //     // component: Search,
+    //     meta: {
+    //       keepAlive: true,
+    //       disabled: false, // 可以设置为 true 来禁用此菜单项
+    //     },
+    //   },
+    //   {
+    //     path: "/ai/video",
+    //     title: "视频识别模型",
+    //     icon: SearchIcon,
+    //     // component: Search,
+    //     meta: {
+    //       keepAlive: true,
+    //     },
+    //   },
+    // ],
   },
   {
     path: "/apps",
