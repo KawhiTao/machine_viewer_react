@@ -1,5 +1,4 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,44 +8,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Bar, BarChart, ResponsiveContainer } from "recharts";
-
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
+import EventDetailDialog from "@/pages/apps/review/EventDetailDialog";
 import { Input } from "@/components/ui/input";
 
 import { DateTimePicker } from "@/components/ui/date-time-picker";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { usePassiveScrollOptimization } from "@/hooks/usePassiveEventListener";
+import EventCard, { type Event } from "@/components/EventCard";
 import {
-  CheckCircle,
-  Eye,
   Grid3X3,
   List,
   Check,
-  Loader2,
-  AlertCircle,
   Cog,
+  AlertCircle,
+  Loader2,
   X,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,6 +44,8 @@ import Uploader from "@/pages/apps/review/Uploader";
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 function Review() {
+  // 使用性能优化的被动事件监听器
+  usePassiveScrollOptimization();
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -66,10 +58,11 @@ function Review() {
   const [hasMore, setHasMore] = useState(true);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
+  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
 
   // 模拟事件数据
   const mockEvents = useMemo(
-    () => [
+    (): Event[] => [
       {
         id: 1,
         type: "违停事件",
@@ -220,41 +213,42 @@ function Review() {
     loadData();
   }, [mockEvents]);
 
+  // 优化的加载更多函数
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    setError(null);
+    try {
+      // 模拟API调用延迟
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
+      // 模拟偶发性加载错误（已禁用）
+      // if (Math.random() < 0.001) {
+      //   throw new Error("加载更多数据失败");
+      // }
+
+      const currentLength = events.length;
+      const moreEvents = mockEvents.slice(currentLength, currentLength + 6);
+
+      if (moreEvents.length === 0) {
+        setHasMore(false);
+      } else {
+        setEvents((prev) => [...prev, ...moreEvents]);
+        setHasMore(currentLength + moreEvents.length < mockEvents.length);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "加载更多失败");
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, events.length, mockEvents]);
+
   // 设置滚动监听
   useEffect(() => {
     if (loadingMore || initialLoading) return;
 
     if (observerRef.current) observerRef.current.disconnect();
-
-    const loadMore = async () => {
-      if (loadingMore || !hasMore) return;
-
-      setLoadingMore(true);
-      setError(null);
-      try {
-        // 模拟API调用延迟
-        await new Promise((resolve) => setTimeout(resolve, 1200));
-
-        // 模拟偶发性加载错误（已禁用）
-        // if (Math.random() < 0.001) {
-        //   throw new Error("加载更多数据失败");
-        // }
-
-        const currentLength = events.length;
-        const moreEvents = mockEvents.slice(currentLength, currentLength + 6);
-
-        if (moreEvents.length === 0) {
-          setHasMore(false);
-        } else {
-          setEvents((prev) => [...prev, ...moreEvents]);
-          setHasMore(currentLength + moreEvents.length < mockEvents.length);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "加载更多失败");
-      } finally {
-        setLoadingMore(false);
-      }
-    };
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -282,7 +276,7 @@ function Review() {
         observerRef.current.disconnect();
       }
     };
-  }, [loadingMore, hasMore, initialLoading, events.length, mockEvents]);
+  }, [loadingMore, hasMore, initialLoading, loadMore]);
 
   // 简单的错误提示组件
   const ErrorAlert = ({
@@ -354,38 +348,53 @@ function Review() {
   );
 
   // 处理单选
-  const handleItemSelect = (id: number, checked: boolean) => {
-    const newSelected = new Set(selectedItems);
-    if (checked) {
-      newSelected.add(id);
-    } else {
-      newSelected.delete(id);
-    }
-    setSelectedItems(newSelected);
-  };
+  const handleItemSelect = useCallback((id: number, checked: boolean) => {
+    setSelectedItems((prev) => {
+      const newSelected = new Set(prev);
+      if (checked) {
+        newSelected.add(id);
+      } else {
+        newSelected.delete(id);
+      }
+      return newSelected;
+    });
+  }, []);
 
   // 处理全选
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     if (selectAll) {
       setSelectedItems(new Set());
     } else {
       setSelectedItems(new Set(mockEvents.map((event) => event.id)));
     }
     setSelectAll(!selectAll);
-  };
+  }, [selectAll, mockEvents]);
 
   const [isAutoReview, setIsAutoReview] = useState<boolean>(true);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
 
   // 处理自动审核
-  const handleAutoReviewChange = (checked: boolean) => {
+  const handleAutoReviewChange = useCallback((checked: boolean) => {
     setIsAutoReview(checked);
     setIsPopoverOpen(false); // 关闭Popover
-  };
+  }, []);
 
   // 切换视图模式
-  const handleViewModeChange = (mode: "grid" | "list") => {
+  const handleViewModeChange = useCallback((mode: "grid" | "list") => {
     setViewMode(mode);
+  }, []);
+
+  // 处理事件确认
+  const handleEventConfirm = useCallback((eventId: number) => {
+    // 这里可以添加确认事件的逻辑，比如调用API
+    console.log("确认事件:", eventId);
+  }, []);
+
+  const showDialogEventDetail = (eventId: number) => {
+    // 查看事件详情的逻辑
+    const foundEvent = mockEvents.find((event) => event.id === eventId);
+    setCurrentEvent(foundEvent || null);
+    // setIsPopoverOpen(false); // 关闭Popover
   };
 
   return (
@@ -720,88 +729,17 @@ function Review() {
         {/* 事件展示区域 */}
         <div className="flex-1 flex flex-col">
           {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-4">
               {events.map((event) => (
-                <Card
+                <EventCard
                   key={event.id}
-                  className="!py-0 !px-0 !gap-0 overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-200"
-                >
-                  <CardContent className="p-0">
-                    {/* 图片区域 */}
-                    <div className="relative overflow-hidden">
-                      <img
-                        src={event.image}
-                        alt={event.type}
-                        className="w-full h-40 object-cover"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                        }}
-                      />
-                      {/* 选择框 */}
-                      <div className="absolute top-2 left-2">
-                        <Checkbox
-                          checked={selectedItems.has(event.id)}
-                          onCheckedChange={(checked) =>
-                            handleItemSelect(event.id, checked as boolean)
-                          }
-                        />
-                      </div>
-                      {/* 右上角状态标签 */}
-                      <div className="absolute top-2 right-2">
-                        {event.status === "人工确认" ? (
-                          <Badge className="bg-green-500/90 backdrop-blur text-white px-2 py-0.5 text-xs">
-                            {event.status}
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-gray-500/90 backdrop-blur text-white px-2 py-0.5 text-xs">
-                            {event.status}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 信息区域 */}
-                    <div className="p-3">
-                      <div className="mb-2">
-                        <h4 className="font-medium text-foreground text-sm">
-                          {event.type}
-                        </h4>
-                      </div>
-
-                      <div className="space-y-1 text-xs">
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                          <span>{event.time}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                          <span>{event.camera}</span>
-                        </div>
-                      </div>
-
-                      {/* 底部操作按钮 */}
-                      <div className="flex gap-1 mt-3 pt-2 border-t border-gray-100">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 h-7 text-xs"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          查看
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 h-7 text-xs"
-                        >
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          确认
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  event={event}
+                  isSelected={selectedItems.has(event.id)}
+                  viewMode="grid"
+                  onSelect={handleItemSelect}
+                  onView={showDialogEventDetail}
+                  onConfirm={handleEventConfirm}
+                />
               ))}
 
               {/* 初始加载骨架屏 */}
@@ -877,60 +815,15 @@ function Review() {
           ) : (
             <div className="space-y-4">
               {events.map((event) => (
-                <Card
+                <EventCard
                   key={event.id}
-                  className="py-0 !gap-0 border-0 shadow-sm hover:shadow-md transition-all duration-200"
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-4">
-                      <Checkbox
-                        checked={selectedItems.has(event.id)}
-                        onCheckedChange={(checked) =>
-                          handleItemSelect(event.id, checked as boolean)
-                        }
-                      />
-                      <div className="w-16 h-12 rounded overflow-hidden flex-shrink-0">
-                        <img
-                          src={event.image}
-                          alt={event.type}
-                          className="w-full h-full object-cover"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                          }}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm">{event.type}</h4>
-                        <p className="text-xs text-muted-foreground">
-                          {event.time}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {event.camera}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Badge
-                          className={
-                            event.status === "人工确认"
-                              ? "bg-green-500 text-white"
-                              : "bg-gray-500 text-white"
-                          }
-                        >
-                          {event.status}
-                        </Badge>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  event={event}
+                  isSelected={selectedItems.has(event.id)}
+                  viewMode="list"
+                  onSelect={handleItemSelect}
+                  onView={showDialogEventDetail}
+                  onConfirm={handleEventConfirm}
+                />
               ))}
 
               {/* 初始加载骨架屏 */}
@@ -1001,6 +894,11 @@ function Review() {
           )}
         </div>
       </main>
+      <EventDetailDialog
+        event={currentEvent}
+        open={!!currentEvent}
+        onClose={() => setCurrentEvent(null)}
+      />
     </div>
   );
 }

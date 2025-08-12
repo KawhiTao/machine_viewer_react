@@ -13,6 +13,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import { ModeToggle } from "@/components/mode-toggle";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
+import MonitoringMetrics from "@/components/monitoring/MonitoringMetrics";
 
 interface HeaderActionsProps {
   className?: string;
@@ -40,6 +41,9 @@ export default function HeaderActions({ className }: HeaderActionsProps) {
 
   return (
     <div className={`flex items-center space-x-3 ${className}`}>
+      {/* 监控指标 */}
+      <MonitoringMetrics />
+
       {/* 应用市场 */}
       <Button
         // variant="ghost"
@@ -55,7 +59,7 @@ export default function HeaderActions({ className }: HeaderActionsProps) {
         }`}
       >
         <Store className="h-4 w-4" />
-        <span className="hidden sm:inline">应用市场</span>
+        {/*<span className="hidden sm:inline">应用市场</span>*/}
       </Button>
 
       {/* 通知下拉菜单 */}

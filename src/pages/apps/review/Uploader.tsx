@@ -163,72 +163,76 @@ function Uploader() {
 
         <div className="flex-1 w-full border rounded-md min-h-0">
           <ScrollArea className="w-full h-full">
-            <div className="space-y-3 p-4">
+            <div className="h-full">
               {files.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 m-auto">
+                <div className="absolute w-full flex items-center justify-center h-full text-gray-500">
                   暂无文件，请选择或拖拽文件到上方区域
                 </div>
               ) : (
-                files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex items-center space-x-4 p-4 border rounded-lg bg-white shadow-sm"
-                  >
-                    {/* 预览图 */}
-                    <div className="flex-shrink-0">
-                      <img
-                        src={file.preview}
-                        alt={file.name}
-                        className="w-16 h-16 object-cover rounded border"
-                      />
-                    </div>
+                <div className="space-y-3 p-4">
+                  {files.map((file) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center space-x-4 p-4 border rounded-lg bg-white shadow-sm"
+                    >
+                      {/* 预览图 */}
+                      <div className="flex-shrink-0">
+                        <img
+                          src={file.preview}
+                          alt={file.name}
+                          className="w-16 h-16 object-cover rounded border"
+                        />
+                      </div>
 
-                    {/* 文件信息 */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {file.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {formatFileSize(file.size)}
-                      </p>
+                      {/* 文件信息 */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {file.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {formatFileSize(file.size)}
+                        </p>
 
-                      {/* 上传进度 */}
-                      {uploadProgress[file.id] !== undefined && (
-                        <div className="mt-2">
-                          <div className="flex justify-between text-xs text-gray-600 mb-1">
-                            <span>上传进度</span>
-                            <span>{Math.round(uploadProgress[file.id])}%</span>
+                        {/* 上传进度 */}
+                        {uploadProgress[file.id] !== undefined && (
+                          <div className="mt-2">
+                            <div className="flex justify-between text-xs text-gray-600 mb-1">
+                              <span>上传进度</span>
+                              <span>
+                                {Math.round(uploadProgress[file.id])}%
+                              </span>
+                            </div>
+                            <Progress
+                              value={uploadProgress[file.id]}
+                              className="h-2"
+                            />
                           </div>
-                          <Progress
-                            value={uploadProgress[file.id]}
-                            className="h-2"
-                          />
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
 
-                    {/* 操作按钮 */}
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => previewImage(file)}
-                        className="p-2"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(file.id)}
-                        disabled={isUploading}
-                        className="p-2 text-red-500 hover:text-red-700"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      {/* 操作按钮 */}
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => previewImage(file)}
+                          className="p-2"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFile(file.id)}
+                          disabled={isUploading}
+                          className="p-2 text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
           </ScrollArea>

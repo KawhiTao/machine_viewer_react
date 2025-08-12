@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
 
 interface TypewriterProps {
   text: string;
@@ -58,30 +57,25 @@ export function Typewriter({
   }, [isTyping, showCursor]);
 
   return (
-    <motion.span
+    <span
       className={className}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
+      style={{ minHeight: "1em", display: "inline-block" }}
     >
       {displayText}
-      <AnimatePresence>
-        {showCursor && (
-          <motion.span
-            className="inline-block"
-            animate={{
-              opacity: showCursorBlink ? 1 : 0,
-            }}
-            transition={{
-              duration: 0.1,
-              ease: "linear",
-            }}
-          >
-            {cursorChar}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </motion.span>
+      {showCursor && (
+        <span
+          className="inline-block transition-opacity duration-100 ease-linear ml-[1px]"
+          style={{
+            opacity: showCursorBlink ? 1 : 0,
+            fontSize: "inherit",
+            lineHeight: "inherit",
+            fontWeight: "inherit",
+          }}
+        >
+          {cursorChar}
+        </span>
+      )}
+    </span>
   );
 }
 

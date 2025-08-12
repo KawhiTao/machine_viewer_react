@@ -18,9 +18,9 @@ export default function ContextMenuDemo({
     <ContextMenu>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>
       <ContextMenuContent className="w-56">
+        <ContextMenuItem>复制</ContextMenuItem>
         <ContextMenuItem onClick={refreshPage}>刷新</ContextMenuItem>
-        <ContextMenuItem>New Folder</ContextMenuItem>
-        <ContextMenuItem>Rename</ContextMenuItem>
+        {/*<ContextMenuItem>Rename</ContextMenuItem>*/}
         <ContextMenuItem variant="destructive">删除</ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
