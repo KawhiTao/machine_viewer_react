@@ -138,7 +138,7 @@ export default function NotificationDropdown({
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs text-white"
             >
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
@@ -182,8 +182,8 @@ export default function NotificationDropdown({
                     key={notification.id}
                     className={`group relative rounded-lg p-3 mb-2 transition-all duration-200 hover:bg-accent cursor-pointer ${
                       !notification.read
-                        ? "bg-gradient-to-br from-primary/5 via-primary/3 to-transparent border-l-2 border-l-primary/40 shadow-sm"
-                        : "border-l-2 border-l-transparent"
+                        ? "bg-gradient-to-br from-primary/5 via-primary/3 to-transparent shadow-sm"
+                        : ""
                     }`}
                     onClick={() => markAsRead(notification.id)}
                   >

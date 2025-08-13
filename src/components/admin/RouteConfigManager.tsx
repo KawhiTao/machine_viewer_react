@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useRouteConfig, useRoutePermissions } from "@/hooks/useRouteConfig";
+import { useRouteConfig } from "@/hooks/useRouteConfig";
 import { routePresets, routesConfig } from "@/config/routes";
 import { Eye, EyeOff, Lock, Unlock, Settings2, RotateCcw } from "lucide-react";
 
@@ -27,7 +27,6 @@ export function RouteConfigManager() {
     setShowInSidebar,
     setShowInBreadcrumb,
     setRouteOrder,
-    setBatchConfig,
     applyPreset,
     resetConfig,
     getRouteConfig,
@@ -188,7 +187,7 @@ export function RouteConfigManager() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <route.icon className="h-5 w-5" />
+                      {route.icon && <route.icon className="h-5 w-5" />}
                       <div>
                         <div className="font-medium">{route.title}</div>
                         <div className="text-sm text-muted-foreground">
@@ -322,7 +321,9 @@ export function RouteConfigManager() {
                               className="flex items-center justify-between p-2 bg-muted/50 rounded"
                             >
                               <div className="flex items-center gap-2">
-                                <child.icon className="h-4 w-4" />
+                                {child.icon && (
+                                  <child.icon className="h-4 w-4" />
+                                )}
                                 <span className="text-sm">{child.title}</span>
                                 <span className="text-xs text-muted-foreground">
                                   {child.path}
@@ -334,14 +335,12 @@ export function RouteConfigManager() {
                                   onCheckedChange={() =>
                                     toggleVisibility(child.path)
                                   }
-                                  size="sm"
                                 />
                                 <Switch
                                   checked={childDisabled}
                                   onCheckedChange={() =>
                                     toggleDisabled(child.path)
                                   }
-                                  size="sm"
                                 />
                               </div>
                             </div>

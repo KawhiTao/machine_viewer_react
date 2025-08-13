@@ -66,7 +66,7 @@ function Review() {
       {
         id: 1,
         type: "违停事件",
-        time: "2025.06.09--12：58",
+        time: "2025.06.09 12：58",
         camera: "相机1 南向",
         status: "AI图审",
         image: "/images/demo.jpg",
@@ -74,7 +74,7 @@ function Review() {
       {
         id: 2,
         type: "违停事件",
-        time: "2025.06.09--12：58",
+        time: "2025.06.09 12：58",
         camera: "相机1 南向",
         status: "人工确认",
         image: "/images/demo.jpg",
@@ -82,7 +82,7 @@ function Review() {
       {
         id: 3,
         type: "违停事件",
-        time: "2025.06.09--12：58",
+        time: "2025.06.09 12：58",
         camera: "相机2 南向",
         status: "AI图审",
         image: "/images/demo.jpg",
@@ -90,7 +90,7 @@ function Review() {
       {
         id: 4,
         type: "违停事件",
-        time: "2025.06.09--12：58",
+        time: "2025.06.09 12：58",
         camera: "相机1 南向",
         status: "AI图审",
         image: "/images/demo.jpg",
@@ -98,7 +98,7 @@ function Review() {
       {
         id: 5,
         type: "违停事件",
-        time: "2025.06.09--12：58",
+        time: "2025.06.09 12：58",
         camera: "相机2 南向",
         status: "人工确认",
         image: "/images/demo.jpg",
@@ -106,7 +106,7 @@ function Review() {
       {
         id: 6,
         type: "违停事件",
-        time: "2025.06.09--12：58",
+        time: "2025.06.09 12：58",
         camera: "相机2 南向",
         status: "AI图审",
         image: "/images/demo.jpg",
@@ -114,7 +114,7 @@ function Review() {
       {
         id: 7,
         type: "行人事件",
-        time: "2025.06.09--13：15",
+        time: "2025.06.09 13：15",
         camera: "相机3 北向",
         status: "AI图审",
         image: "/images/demo.jpg",
@@ -122,7 +122,7 @@ function Review() {
       {
         id: 8,
         type: "抛洒物事件",
-        time: "2025.06.09--13：22",
+        time: "2025.06.09 13：22",
         camera: "相机1 南向",
         status: "人工确认",
         image: "/images/demo.jpg",
@@ -130,7 +130,7 @@ function Review() {
       {
         id: 9,
         type: "烟火事件",
-        time: "2025.06.09--13：30",
+        time: "2025.06.09 13：30",
         camera: "相机2 南向",
         status: "AI图审",
         image: "/images/demo.jpg",
@@ -138,7 +138,7 @@ function Review() {
       {
         id: 10,
         type: "违规行驶",
-        time: "2025.06.09--13：45",
+        time: "2025.06.09 13：45",
         camera: "相机3 北向",
         status: "AI图审",
         image: "/images/demo.jpg",
@@ -146,7 +146,7 @@ function Review() {
       {
         id: 11,
         type: "违停事件",
-        time: "2025.06.09--14：00",
+        time: "2025.06.09 14：00",
         camera: "相机1 南向",
         status: "人工确认",
         image: "/images/demo.jpg",
@@ -154,7 +154,7 @@ function Review() {
       {
         id: 12,
         type: "行人事件",
-        time: "2025.06.09--14：15",
+        time: "2025.06.09 14：15",
         camera: "相机2 南向",
         status: "AI图审",
         image: "/images/demo.jpg",
@@ -162,7 +162,7 @@ function Review() {
       {
         id: 13,
         type: "违停事件",
-        time: "2025.06.09--14：30",
+        time: "2025.06.09 14：30",
         camera: "相机3 北向",
         status: "AI图审",
         image: "/images/demo.jpg",
@@ -170,7 +170,7 @@ function Review() {
       {
         id: 14,
         type: "抛洒物事件",
-        time: "2025.06.09--14：45",
+        time: "2025.06.09 14：45",
         camera: "相机1 南向",
         status: "人工确认",
         image: "/images/demo.jpg",
@@ -178,7 +178,7 @@ function Review() {
       {
         id: 15,
         type: "违停事件",
-        time: "2025.06.09--15：00",
+        time: "2025.06.09 15：00",
         camera: "相机2 南向",
         status: "AI图审",
         image: "/images/demo.jpg",

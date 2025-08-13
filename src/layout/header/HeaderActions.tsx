@@ -89,7 +89,7 @@ export default function HeaderActions({ className }: HeaderActionsProps) {
             className="flex items-center space-x-2 hover:bg-accent"
           >
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/api/placeholder/32/32" alt="用户头像" />
+              <AvatarImage src="/api/test/user" alt="用户头像" />
               <AvatarFallback>
                 <User className="h-4 w-4" />
               </AvatarFallback>

@@ -19,7 +19,10 @@ interface SidebarLayoutProps {
 
 export function SidebarLayout({ children }: SidebarLayoutProps) {
   return (
-    <SidebarProvider className="!min-h-screen !max-h-screen overflow-hidden">
+    <SidebarProvider
+      defaultOpen={false}
+      className="!min-h-screen !max-h-screen overflow-hidden"
+    >
       <AppSidebar />
       {/*<SidebarInset className="h-screen max-h-screen overflow-hidden flex flex-col !m-0">*/}
       <SidebarInset

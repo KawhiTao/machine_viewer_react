@@ -2,7 +2,6 @@ import { type ReactNode } from "react";
 import { Navigate, Route } from "react-router-dom";
 import {
   HomeIcon,
-  SearchIcon,
   AlertTriangleIcon,
   FileTextIcon,
   SettingsIcon,
@@ -18,16 +17,17 @@ import { lazy } from "react";
 const Home = lazy(() => import("@/pages/Home"));
 // const Auto = lazy(() => import("@/pages/auto"));
 const Demo = lazy(() => import("@/pages/demo"));
-const Review = lazy(() => import("@/pages/apps/review"));
+const Review = lazy(() => import("@/pages/apps/review/Index"));
 const AppMarket = lazy(() => import("@/pages/apps/AppMarket"));
 const Management = lazy(() => import("@/pages/management"));
 const AgentText = lazy(() => import("@/pages/agent/Text"));
+const LoginPage = lazy(() => import("@/pages/user/Login"));
 
 // 路由配置类型定义
 export interface RouteConfig {
   path: string;
   title: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon?: React.ComponentType<{ className?: string }>;
   component?: React.ComponentType;
   children?: RouteConfig[];
   redirect?: string;
@@ -48,6 +48,30 @@ export interface RouteConfig {
 
 // 全局路由配置
 export const routesConfig: RouteConfig[] = [
+  {
+    path: "/",
+    title: "",
+    redirect: "/login",
+    meta: {
+      visible: false,
+      disabled: false,
+      showInSidebar: false,
+      showInBreadcrumb: false,
+      order: 0,
+      environment: "all",
+    },
+  },
+  {
+    path: "/login",
+    title: "登录",
+    // icon: LoginIcon,
+    component: LoginPage,
+    meta: {
+      keepAlive: true,
+      order: 0,
+      showInSidebar: false,
+    },
+  },
   {
     path: "/home",
     title: "系统首页",

@@ -320,7 +320,7 @@ const MessageItem = memo(
         >
           {/* 附件显示区域 */}
           {message.attachments && message.attachments.length > 0 && (
-            <div className="mb-3 pb-3 border-b border-border/20">
+            <div className=" border-b border-border/20">
               <div
                 className="files-scroll"
                 style={{

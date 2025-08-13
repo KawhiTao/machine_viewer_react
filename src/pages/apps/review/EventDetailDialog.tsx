@@ -8,7 +8,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Camera, Clock, Tag } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import {
+  Calendar,
+  Camera,
+  Clock,
+  Tag,
+  MapPin,
+  AlertTriangle,
+  X,
+  Info,
+} from "lucide-react";
 
 interface Event {
   id: number;
@@ -32,19 +43,19 @@ const EventDetailDialog = ({
 }: EventDetailDialogProps) => {
   if (!event) return null;
 
-  const getStatusColor = (status: string) => {
+  const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case "已处理":
       case "processed":
-        return "bg-green-100 text-green-800 border-green-300";
+        return "default";
       case "待处理":
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-300";
+        return "secondary";
       case "异常":
       case "error":
-        return "bg-red-100 text-red-800 border-red-300";
+        return "destructive";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-300";
+        return "outline";
     }
   };
 
@@ -67,97 +78,157 @@ const EventDetailDialog = ({
     }
   };
 
+  const getProcessingAdvice = (type: string) => {
+    switch (type) {
+      case "入侵检测":
+        return "建议立即派遣安保人员到现场查看，确认是否存在安全威胁。";
+      case "人员识别":
+        return "已识别到人员活动，请确认是否为授权人员，核实身份信息。";
+      case "车辆检测":
+        return "检测到车辆活动，请核实车辆信息和停放区域是否符合规定。";
+      case "异常行为":
+        return "发现异常行为模式，建议进一步分析现场情况并采取相应措施。";
+      default:
+        return "请根据事件类型和现场情况采取相应的处理措施。";
+    }
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onClose}>
-      <AlertDialogContent className="p-4 sm:max-w-[1200px] max-h-[85vh] overflow-hidden flex flex-col">
-        <AlertDialogHeader className="flex-shrink-0">
-          <AlertDialogTitle className="flex items-center gap-2 text-xl m-0">
-            <span className="text-2xl">{getTypeIcon(event.type)}</span>
-            事件详情 #{event.type}
-          </AlertDialogTitle>
+      <AlertDialogContent className="!max-w-4xl w-[95vw] max-h-[95vh] p-0 overflow-hidden">
+        {/* Header */}
+        <AlertDialogHeader className="px-4 py-3 border-b bg-muted/30">
+          <div className="flex items-center justify-between">
+            <AlertDialogTitle className="flex items-center gap-2 text-lg">
+              <span className="text-xl">{getTypeIcon(event.type)}</span>
+              事件详情 - {event.type}
+            </AlertDialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-7 w-7 hover:bg-background/80"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </AlertDialogHeader>
 
         <AlertDialogDescription asChild>
-          <div className="flex-1 overflow-auto pr-2 space-y-4">
-            {/* 事件图像 */}
-            <div className="flex justify-center">
-              <div className="relative">
-                <img
-                  src={event.image}
-                  alt={`事件 ${event.id}`}
-                  className="max-w-full h-auto rounded-lg border shadow-md"
-                  style={{ maxHeight: "300px" }}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "/placeholder-image.jpg";
-                  }}
-                />
-              </div>
-            </div>
+          <div className="overflow-auto">
+            <div className="p-4 space-y-4 pt-0">
+              {/* Main Content */}
+              <div className="grid lg:grid-cols-1 gap-y-4">
+                {/* Left: Event Image */}
+                <div className="lg:col-span-1">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <Camera className="h-4 w-4" />
+                      现场图像
+                    </div>
+                    <div className="relative border rounded-lg overflow-hidden">
+                      <img
+                        src={event.image}
+                        alt={`事件 ${event.id}`}
+                        className="w-full h-auto object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/placeholder-image.jpg";
+                        }}
+                      />
+                      <div className="absolute top-2 right-2">
+                        <Badge
+                          variant={getStatusVariant(event.status)}
+                          className="text-xs"
+                        >
+                          {event.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-            {/* 事件基本信息 */}
-            <div className="grid grid-cols-1 gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-gray-500" />
-                <span className="font-medium text-gray-700">事件类型：</span>
-                <Badge variant="outline" className="ml-auto">
-                  {event.type}
-                </Badge>
+                {/* Right: Event Information */}
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <Tag className="h-4 w-4" />
+                      事件信息
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Tag className="h-3.5 w-3.5" />
+                          事件类型
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {event.type}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <AlertTriangle className="h-3.5 w-3.5" />
+                          处理状态
+                        </div>
+                        <Badge
+                          variant={getStatusVariant(event.status)}
+                          className="text-xs"
+                        >
+                          {event.status}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="h-3.5 w-3.5" />
+                          发生时间
+                        </div>
+                        <div className="text-sm font-mono">{event.time}</div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5" />
+                          监控位置
+                        </div>
+                        <div className="text-sm">{event.camera}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span className="font-medium text-gray-700">发生时间：</span>
-                <span className="ml-auto text-gray-600">{event.time}</span>
-              </div>
+              <Separator />
 
-              <div className="flex items-center gap-2">
-                <Camera className="w-4 h-4 text-gray-500" />
-                <span className="font-medium text-gray-700">摄像头：</span>
-                <span className="ml-auto text-gray-600">{event.camera}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-500" />
-                <span className="font-medium text-gray-700">处理状态：</span>
-                <Badge className={`ml-auto ${getStatusColor(event.status)}`}>
-                  {event.status}
-                </Badge>
-              </div>
-            </div>
-
-            {/* 操作建议 */}
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <h4 className="font-medium text-blue-900 mb-2">处理建议</h4>
-              <p className="text-sm text-blue-700">
-                {event.type === "入侵检测" &&
-                  "建议立即派遣安保人员到现场查看，确认是否存在安全威胁。"}
-                {event.type === "人员识别" &&
-                  "已识别到人员活动，请确认是否为授权人员。"}
-                {event.type === "车辆检测" &&
-                  "检测到车辆活动，请核实车辆信息和停放区域。"}
-                {event.type === "异常行为" &&
-                  "发现异常行为模式，建议进一步分析和处理。"}
-                {!["入侵检测", "人员识别", "车辆检测", "异常行为"].includes(
-                  event.type,
-                ) && "请根据事件类型和现场情况采取相应的处理措施。"}
-              </p>
+              {/* Processing Advice */}
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  <div className="space-y-1">
+                    <div className="font-medium">处理建议</div>
+                    <div className="text-muted-foreground">
+                      {getProcessingAdvice(event.type)}
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
             </div>
           </div>
         </AlertDialogDescription>
 
-        <AlertDialogFooter className="flex-shrink-0 flex gap-2 sm:gap-2 pt-4 mt-4 border-t">
-          <Button variant="outline" onClick={onClose} className="flex-1">
+        {/* Footer */}
+        <AlertDialogFooter className="px-4 py-3 border-t bg-muted/30">
+          <Button variant="outline" onClick={onClose} size="sm">
             关闭
           </Button>
           <Button
             onClick={() => {
-              // 这里可以添加标记为已处理的逻辑
               console.log(`标记事件 ${event.id} 为已处理`);
               onClose();
             }}
-            className="flex-1"
             disabled={event.status === "已处理"}
+            size="sm"
           >
             {event.status === "已处理" ? "已处理" : "标记已处理"}
           </Button>

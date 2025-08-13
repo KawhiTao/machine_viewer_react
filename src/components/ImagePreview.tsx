@@ -405,7 +405,7 @@ const ImagePreview = memo(
         animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
         exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
         onClick={onClose}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -413,6 +413,8 @@ const ImagePreview = memo(
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onContextMenu={(e) => e.preventDefault()}
+        style={{ pointerEvents: "all" }}
       >
         <motion.div
           ref={containerRef}
@@ -423,6 +425,9 @@ const ImagePreview = memo(
           className="relative w-full h-full flex items-center justify-center overflow-hidden"
           onWheel={handleWheel}
           onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+          style={{ pointerEvents: "all" }}
         >
           <img
             ref={imageRef}
@@ -459,7 +464,11 @@ const ImagePreview = memo(
                     variant="ghost"
                     size="icon"
                     className="h-12 w-12 bg-black/60 text-white border-0 transition-all rounded-full"
-                    onClick={goToPrevious}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goToPrevious();
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
                     title="上一张 (←)"
                   >
                     <ChevronLeft className="w-6 h-6" />
@@ -478,7 +487,11 @@ const ImagePreview = memo(
                     variant="ghost"
                     size="icon"
                     className="h-12 w-12 bg-black/60 text-white border-0 transition-all rounded-full"
-                    onClick={goToNext}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goToNext();
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
                     title="下一张 (→)"
                   >
                     <ChevronRight className="w-6 h-6" />
@@ -499,7 +512,11 @@ const ImagePreview = memo(
               variant="ghost"
               size="icon"
               className="h-10 w-10 bg-black/60  text-white border-0 transition-all"
-              onClick={onClose}
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
               title="关闭 (ESC)"
             >
               <X className="w-5 h-5" />
@@ -508,7 +525,11 @@ const ImagePreview = memo(
               variant="ghost"
               size="icon"
               className="h-10 w-10 bg-black/60  text-white border-0 transition-all"
-              onClick={() => setScale((prev) => Math.min(5, prev + 0.2))}
+              onClick={(e) => {
+                e.stopPropagation();
+                setScale((prev) => Math.min(5, prev + 0.2));
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
               title="放大 (+)"
             >
               <ZoomIn className="w-5 h-5" />
@@ -517,7 +538,11 @@ const ImagePreview = memo(
               variant="ghost"
               size="icon"
               className="h-10 w-10 bg-black/60  text-white border-0 transition-all"
-              onClick={() => setScale((prev) => Math.max(0.1, prev - 0.2))}
+              onClick={(e) => {
+                e.stopPropagation();
+                setScale((prev) => Math.max(0.1, prev - 0.2));
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
               title="缩小 (-)"
             >
               <ZoomOut className="w-5 h-5" />
@@ -526,7 +551,11 @@ const ImagePreview = memo(
               variant="ghost"
               size="icon"
               className="h-10 w-10 bg-black/60  text-white border-0 transition-all"
-              onClick={resetImageView}
+              onClick={(e) => {
+                e.stopPropagation();
+                resetImageView();
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
               title="重置 (0/R)"
             >
               <RotateCcw className="w-5 h-5" />

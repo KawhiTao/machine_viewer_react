@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { X, Upload, Eye, Download } from "lucide-react";
+import ImagePreview, { type ImageItem } from "@/components/ImagePreview";
 interface FileWithPreview extends File {
   preview: string;
   id: string;
@@ -17,6 +18,8 @@ function Uploader() {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
   const [isUploading, setIsUploading] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const filesWithPreview = acceptedFiles.map((file) =>
@@ -103,9 +106,21 @@ function Uploader() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const previewImage = (file: FileWithPreview) => {
-    window.open(file.preview, "_blank");
+  const previewImage = (fileId: string) => {
+    const fileIndex = files.findIndex((f) => f.id === fileId);
+    if (fileIndex >= 0) {
+      setCurrentPreviewIndex(fileIndex);
+      setIsPreviewOpen(true);
+    }
   };
+
+  // 将文件转换为ImagePreview组件需要的格式
+  const imageItems: ImageItem[] = files.map((file) => ({
+    src: file.preview,
+    alt: file.name,
+    fileName: file.name,
+    fileSize: file.size,
+  }));
 
   return (
     <div className="w-full max-w-4xl mx-auto h-full flex flex-col space-y-4">
@@ -127,7 +142,7 @@ function Uploader() {
           <p className="text-blue-600">释放文件以上传...</p>
         ) : (
           <div>
-            <p className="text-lg font-medium text-gray-900 mb-2">
+            <p className="text-lg font-medium text-accent-foreground mb-2">
               拖拽图片到此处，或点击选择文件
             </p>
             <p className="text-sm text-gray-500">
@@ -162,18 +177,18 @@ function Uploader() {
         </div>
 
         <div className="flex-1 w-full border rounded-md min-h-0">
-          <ScrollArea className="w-full h-full">
+          <ScrollArea className=" h-full">
             <div className="h-full">
               {files.length === 0 ? (
                 <div className="absolute w-full flex items-center justify-center h-full text-gray-500">
                   暂无文件，请选择或拖拽文件到上方区域
                 </div>
               ) : (
-                <div className="space-y-3 p-4">
+                <div className="space-y-3 box-content p-2">
                   {files.map((file) => (
                     <div
                       key={file.id}
-                      className="flex items-center space-x-4 p-4 border rounded-lg bg-white shadow-sm"
+                      className="flex items-center space-x-4  border rounded-lg bg-accent shadow-sm"
                     >
                       {/* 预览图 */}
                       <div className="flex-shrink-0">
@@ -186,10 +201,10 @@ function Uploader() {
 
                       {/* 文件信息 */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-accent-foreground truncate">
                           {file.name}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-foreground">
                           {formatFileSize(file.size)}
                         </p>
 
@@ -215,7 +230,7 @@ function Uploader() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => previewImage(file)}
+                          onClick={() => previewImage(file.id)}
                           className="p-2"
                         >
                           <Eye className="h-4 w-4" />
@@ -238,6 +253,15 @@ function Uploader() {
           </ScrollArea>
         </div>
       </div>
+
+      {/* 图片预览组件 */}
+      <ImagePreview
+        images={imageItems}
+        currentIndex={currentPreviewIndex}
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        onIndexChange={setCurrentPreviewIndex}
+      />
     </div>
   );
 }
