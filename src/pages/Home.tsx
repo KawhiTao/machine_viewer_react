@@ -1,29 +1,48 @@
 import { useState } from "react";
-import { TrendingUp, Calendar } from "lucide-react";
+import {
+  TrendingUp,
+  Calendar,
+  Activity,
+  BarChart3,
+  AlertCircle,
+  RefreshCw,
+  XCircle,
+  ArrowUp,
+} from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import {
   PieChart,
   Pie,
   Cell,
-  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   AreaChart,
   Area,
 } from "recharts";
 
 // 模拟数据
 const eventCategoryData = [
-  { name: "违停事件", value: 52, color: "#00D4AA" },
-  { name: "行人事件", value: 52, color: "#8B5CF6" },
-  { name: "抛洒物事件", value: 52, color: "#F59E0B" },
-  { name: "烟火事件", value: 52, color: "#EF4444" },
-  { name: "违规行驶", value: 52, color: "#06B6D4" },
-  { name: "拥堵事件", value: 18, color: "#6B7280" },
+  { name: "违停事件", value: 52, fill: "#00D4AA" },
+  { name: "行人事件", value: 52, fill: "#8B5CF6" },
+  { name: "抛洒物事件", value: 52, fill: "#F59E0B" },
+  { name: "烟火事件", value: 52, fill: "#EF4444" },
+  { name: "违规行驶", value: 52, fill: "#06B6D4" },
+  { name: "拥堵事件", value: 18, fill: "#6B7280" },
 ];
 
 const secondaryAuditData = [
@@ -46,6 +65,25 @@ const historicalData = [
   { date: "03-17", value: 18 },
 ];
 
+// 图表配置
+const pieChartConfig = {
+  违停事件: { label: "违停事件", color: "#00D4AA" },
+  行人事件: { label: "行人事件", color: "#8B5CF6" },
+  抛洒物事件: { label: "抛洒物事件", color: "#F59E0B" },
+  烟火事件: { label: "烟火事件", color: "#EF4444" },
+  违规行驶: { label: "违规行驶", color: "#06B6D4" },
+  拥堵事件: { label: "拥堵事件", color: "#6B7280" },
+};
+
+const barChartConfig = {
+  value1: { label: "一次审查", color: "#3b82f6" },
+  value2: { label: "二次审查", color: "#64748b" },
+};
+
+const areaChartConfig = {
+  value: { label: "事件数量", color: "#3b82f6" },
+};
+
 function Home() {
   const [timeRange, setTimeRange] = useState("today");
 
@@ -55,86 +93,110 @@ function Home() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
-            <div className="w-1.5 h-6 bg-[#3b82f6] mr-3 rounded-full"></div>
+            <div className="w-1.5 h-6 bg-primary mr-3 rounded-full"></div>
             <h2 className="text-xl font-semibold text-foreground">事件概况</h2>
           </div>
           <Tabs value={timeRange} onValueChange={setTimeRange}>
-            <TabsList className="bg-muted border border-border">
-              <TabsTrigger
-                value="today"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2"
-              >
-                今日
-              </TabsTrigger>
-              <TabsTrigger
-                value="week"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2"
-              >
-                本周
-              </TabsTrigger>
-              <TabsTrigger
-                value="month"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 py-2"
-              >
-                本月
-              </TabsTrigger>
+            <TabsList>
+              <TabsTrigger value="today">今日</TabsTrigger>
+              <TabsTrigger value="week">本周</TabsTrigger>
+              <TabsTrigger value="month">本月</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
-        <div className="grid grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           {/* 今日事件 */}
-          <div className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-4">
-              <div className="w-3 h-3 bg-muted-foreground rounded-full mr-3"></div>
-              <span className="text-sm text-muted-foreground">今日事件</span>
-            </div>
-            <div className="text-3xl font-bold text-foreground">80</div>
-          </div>
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardDescription className="flex items-center">
+                  <Activity className="h-4 w-4 mr-2 text-blue-500" />
+                  今日事件
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <CardTitle className="text-3xl font-bold">80</CardTitle>
+            </CardContent>
+          </Card>
 
           {/* 历史总事件 */}
-          <div className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-4">
-              <div className="w-3 h-3 bg-muted-foreground rounded-full mr-3"></div>
-              <span className="text-sm text-muted-foreground">历史总事件</span>
-            </div>
-            <div className="text-3xl font-bold text-foreground">1010</div>
-          </div>
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardDescription className="flex items-center">
+                  <BarChart3 className="h-4 w-4 mr-2 text-purple-500" />
+                  历史总事件
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <CardTitle className="text-3xl font-bold">1010</CardTitle>
+            </CardContent>
+          </Card>
 
           {/* 累计图审 */}
-          <div className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-4">
-              <div className="w-3 h-3 bg-muted-foreground rounded-full mr-3"></div>
-              <span className="text-sm text-muted-foreground">累计图审</span>
-            </div>
-            <div className="text-3xl font-bold text-foreground">88</div>
-          </div>
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardDescription className="flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-2 text-orange-500" />
+                  累计图审
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <CardTitle className="text-3xl font-bold">88</CardTitle>
+            </CardContent>
+          </Card>
 
           {/* 重复事件 */}
-          <div className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-4">
-              <div className="w-3 h-3 bg-muted-foreground rounded-full mr-3"></div>
-              <span className="text-sm text-muted-foreground">重复事件</span>
-            </div>
-            <div className="text-3xl font-bold text-foreground">1000</div>
-          </div>
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardDescription className="flex items-center">
+                  <RefreshCw className="h-4 w-4 mr-2 text-cyan-500" />
+                  重复事件
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <CardTitle className="text-3xl font-bold">1000</CardTitle>
+            </CardContent>
+          </Card>
 
           {/* 误报事件 */}
-          <div className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-4">
-              <div className="w-3 h-3 bg-gray-500 rounded-full mr-3"></div>
-              <span className="text-sm text-muted-foreground">误报事件</span>
-            </div>
-            <div className="text-3xl font-bold text-foreground">100</div>
-          </div>
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardDescription className="flex items-center">
+                  <XCircle className="h-4 w-4 mr-2 text-red-500" />
+                  误报事件
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <CardTitle className="text-3xl font-bold">100</CardTitle>
+            </CardContent>
+          </Card>
 
           {/* 提升度 */}
-          <div className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-4">
-              <span className="text-sm text-muted-foreground">提升度</span>
-            </div>
-            <div className="text-3xl font-bold text-[#10b981]">12%</div>
-          </div>
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardDescription className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-2 text-green-500" />
+                  提升度
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <CardTitle className="text-3xl font-bold text-green-600">
+                12%
+              </CardTitle>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -175,7 +237,10 @@ function Home() {
           <div className="p-6">
             <div className="flex items-center">
               <div className="flex-1 relative">
-                <ResponsiveContainer width="100%" height={280}>
+                <ChartContainer
+                  config={pieChartConfig}
+                  className="h-[280px] w-full"
+                >
                   <PieChart>
                     <Pie
                       data={eventCategoryData}
@@ -188,9 +253,10 @@ function Home() {
                       endAngle={450}
                     >
                       {eventCategoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
+                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                     <text
                       x="50%"
                       y="45%"
@@ -210,7 +276,7 @@ function Home() {
                       80
                     </text>
                   </PieChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               </div>
               <div className="w-40 ml-6">
                 <div className="space-y-3">
@@ -222,7 +288,7 @@ function Home() {
                       <div className="flex items-center">
                         <div
                           className="w-3 h-3 rounded-full mr-2"
-                          style={{ backgroundColor: item.color }}
+                          style={{ backgroundColor: item.fill }}
                         ></div>
                         <span className="text-foreground text-sm">
                           {item.name}
@@ -269,32 +335,27 @@ function Home() {
             </Tabs>
           </div>
           <div className="p-6">
-            <ResponsiveContainer width="100%" height={280}>
+            <ChartContainer
+              config={barChartConfig}
+              className="h-[280px] w-full"
+            >
               <BarChart data={secondaryAuditData} barGap={8}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} />
+                <YAxis tickLine={false} axisLine={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar
+                  dataKey="value1"
+                  fill="var(--color-value1)"
+                  radius={[4, 4, 0, 0]}
                 />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12 }}
+                <Bar
+                  dataKey="value2"
+                  fill="var(--color-value2)"
+                  radius={[4, 4, 0, 0]}
                 />
-                <Tooltip
-                  contentStyle={{
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                    color: "hsl(var(--foreground))",
-                  }}
-                />
-                <Bar dataKey="value1" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="value2" fill="#64748b" radius={[4, 4, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </div>
         </div>
       </div>
@@ -351,44 +412,38 @@ function Home() {
             </div>
           </div>
           <div className="p-6">
-            <ResponsiveContainer width="100%" height={240}>
+            <ChartContainer
+              config={areaChartConfig}
+              className="h-[240px] w-full"
+            >
               <AreaChart data={historicalData}>
                 <defs>
                   <linearGradient id="colorArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-value)"
+                      stopOpacity={0.4}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-value)"
+                      stopOpacity={0.1}
+                    />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12 }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    // backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                    color: "hsl(var(--foreground))",
-                  }}
-                />
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" tickLine={false} axisLine={false} />
+                <YAxis tickLine={false} axisLine={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="#3b82f6"
+                  stroke="var(--color-value)"
                   strokeWidth={2}
                   fill="url(#colorArea)"
                 />
               </AreaChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </div>
         </div>
       </div>

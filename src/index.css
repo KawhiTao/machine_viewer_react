@@ -139,8 +139,104 @@
     body {
         @apply bg-background text-foreground;
     }
+    /* 全局文本选择样式 */
+    ::selection {
+        @apply bg-primary text-primary-foreground;
+    }
+    ::-moz-selection {
+        @apply bg-primary text-primary-foreground;
+    }
 }
 
 /* 侧边栏动画优化 */
 @layer components {
+    /* 多行文本截断工具类 */
+    .line-clamp-1 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+    }
+
+    .line-clamp-2 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .line-clamp-3 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+    }
+
+    /* Apple Store风格卡片动画 */
+    .card-container {
+        transform-origin: center center;
+        transition: z-index 0s;
+    }
+
+    .card-container:hover {
+        z-index: 10 !important;
+    }
+
+    /* 动画过程中的层级管理 */
+    [data-framer-motion-element] {
+        transform-origin: center center;
+    }
+
+    /* 确保动画元素在最顶层 */
+    [data-framer-motion-element][style*="transform"] {
+        z-index: 9998 !important;
+        position: relative;
+    }
+
+    /* 弹窗动画增强 */
+    [data-state="open"] [data-framer-motion-element] {
+        z-index: 9999 !important;
+    }
+
+    /* 确保layoutId动画在最顶层 */
+    [data-framer-motion-element][data-layout-id] {
+        z-index: 9999 !important;
+        position: relative !important;
+    }
+
+    /* 动画过程中的全局层级提升 */
+    body:has([data-state="open"]) [data-framer-motion-element][data-layout-id] {
+        z-index: 9999 !important;
+    }
+
+    /* 优化网格布局中的动画 */
+    .grid [data-framer-motion-element] {
+        backface-visibility: hidden;
+        transform-style: preserve-3d;
+    }
+
+    /* 防止动画过程中的闪烁 */
+    [data-framer-motion-element] img {
+        backface-visibility: hidden;
+        transform: translateZ(0);
+    }
+
+    /* 为动画容器提供硬件加速 */
+    .motion-container {
+        will-change: transform, opacity;
+        transform: translateZ(0);
+        position: relative;
+    }
+
+    /* 确保motion容器在动画时处于最顶层 */
+    .motion-container[data-framer-motion-element] {
+        z-index: 9999 !important;
+    }
+
+    /* 弹窗打开时提升所有相关动画元素层级 */
+    [data-state="open"] ~ * [data-framer-motion-element],
+    [data-state="open"] [data-framer-motion-element] {
+        z-index: 9999 !important;
+        isolation: isolate;
+    }
 }

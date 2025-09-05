@@ -1,62 +1,95 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/hooks/useAuth";
+import { Eye, EyeOff } from "lucide-react";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("test@example.com");
-  const [password, setPassword] = useState("123456");
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, state, clearError } = useAuth();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // 从localStorage加载记住的用户名
+  useEffect(() => {
+    const remembered = localStorage.getItem("remember_me");
+    const savedUsername = localStorage.getItem("saved_username");
+
+    if (remembered === "true" && savedUsername) {
+      setUsername(savedUsername);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    clearError(); // 清除之前的错误
 
-    // 模拟登录请求延迟
-    setTimeout(() => {
-      setIsLoading(false);
-      // 跳转到 /home 页面
-      navigate("/home");
-    }, 500);
+    // 处理"记住我"功能
+    if (rememberMe) {
+      localStorage.setItem("remember_me", "true");
+      localStorage.setItem("saved_username", username);
+    } else {
+      localStorage.removeItem("remember_me");
+      localStorage.removeItem("saved_username");
+    }
+
+    try {
+      await login({
+        username,
+        password,
+        grant_type: "password",
+        scope: "read write",
+        rememberMe, // 传递记住我状态
+      });
+    } catch (error) {
+      // 错误已经在context和toast中处理
+      console.error("登录失败:", error);
+    }
   };
 
+  // GitHub登录暂未实现
   const handleGitHubLogin = () => {
-    setIsLoading(true);
-    // 模拟 GitHub 登录
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate("/home");
-    }, 500);
+    console.log("GitHub登录功能待实现");
   };
 
   return (
     <form
-      className={cn("flex flex-col gap-6", className)}
+      className={cn(
+        "flex flex-col gap-6 transition-opacity duration-200",
+        state.isLoading ? "opacity-95" : "opacity-100",
+        className,
+      )}
       {...props}
       onSubmit={handleSubmit}
     >
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">登录您的账户</h1>
         <p className="text-muted-foreground text-sm text-balance">
-          输入您的邮箱以登录您的账户
+          输入您的用户名和密码以登录系统
         </p>
       </div>
+
       <div className="grid gap-6">
         <div className="grid gap-3">
-          <Label htmlFor="email">邮箱</Label>
+          <Label htmlFor="username">用户名</Label>
           <Input
-            id="email"
-            type="email"
-            placeholder="test@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            id="username"
+            type="text"
+            placeholder="请输入用户名"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            disabled={state.isLoading}
             required
+            autoComplete="username"
           />
         </div>
         <div className="grid gap-3">
@@ -65,21 +98,64 @@ export function LoginForm({
             <a
               href="#"
               className="ml-auto text-sm underline-offset-4 hover:underline"
+              onClick={(e) => e.preventDefault()}
             >
               忘记密码？
             </a>
           </div>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="请输入密码"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={state.isLoading}
+              required
+              className="pr-10"
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 flex items-center pr-3"
+              onClick={() => setShowPassword(!showPassword)}
+              disabled={state.isLoading}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <Eye className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+          </div>
         </div>
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "登录中..." : "登录"}
+
+        {/* 记住密码选项 */}
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="remember-me"
+            checked={rememberMe}
+            onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+            disabled={state.isLoading}
+          />
+          <Label
+            htmlFor="remember-me"
+            className="text-sm font-normal cursor-pointer select-none"
+          >
+            记住我
+            {/*<span className="text-xs text-muted-foreground ml-1">
+              (保存用户名)
+            </span>*/}
+          </Label>
+        </div>
+
+        <Button type="submit" className="w-full" disabled={state.isLoading}>
+          {state.isLoading && (
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-transparent border-t-current border-r-current mr-2"></div>
+          )}
+          {state.isLoading ? "登录中..." : "登录"}
         </Button>
+
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">
             或继续使用
@@ -89,8 +165,8 @@ export function LoginForm({
           type="button"
           variant="outline"
           className="w-full"
-          onClick={handleGitHubLogin}
-          disabled={isLoading}
+          onClick={() => console.log("第三方登录待实现")}
+          disabled={state.isLoading}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -102,14 +178,17 @@ export function LoginForm({
               fill="currentColor"
             />
           </svg>
-          使用 GitHub 登录
+          第三方登录
         </Button>
       </div>
       <div className="text-center text-sm">
         还没有账户？{" "}
-        <a href="#" className="underline underline-offset-4">
+        <Link
+          to="/register"
+          className="underline underline-offset-4 hover:text-primary"
+        >
           立即注册
-        </a>
+        </Link>
       </div>
     </form>
   );

@@ -55,7 +55,7 @@ export default function MonitoringMetrics({
     fetchMetrics();
 
     // 每30秒更新一次
-    const interval = setInterval(fetchMetrics, 3000);
+    const interval = setInterval(fetchMetrics, 1000);
 
     return () => clearInterval(interval);
   }, []);

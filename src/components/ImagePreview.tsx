@@ -40,6 +40,7 @@ const ImagePreview = memo(
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const dragStartRef = useRef({ x: 0, y: 0 });
+    const isDraggingRef = useRef(false);
     const imageRef = useRef<HTMLImageElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     // 触摸相关状态
@@ -156,49 +157,54 @@ const ImagePreview = memo(
     // 开始拖拽
     const handleMouseDown = (e: React.MouseEvent) => {
       e.preventDefault();
+
+      // 使用ref立即设置拖拽状态
+      isDraggingRef.current = true;
       setIsDragging(true);
 
-      // 修复：计算相对于图片当前位置的偏移
+      // 计算相对于图片当前位置的偏移
       const dragStartX = e.clientX - position.x;
       const dragStartY = e.clientY - position.y;
-
-      // 保存到 ref 中，避免闭包问题
       dragStartRef.current = { x: dragStartX, y: dragStartY };
-
-      setDragStart({
-        x: dragStartX,
-        y: dragStartY,
-      });
 
       // 立即监听全局鼠标移动和释放事件
       const handleGlobalMouseMove = (e: MouseEvent) => {
+        // 使用ref检查拖拽状态
+        if (!isDraggingRef.current) return;
+
         const newX = e.clientX - dragStartRef.current.x;
         const newY = e.clientY - dragStartRef.current.y;
         setPosition(getBoundedPosition(newX, newY));
       };
 
       const handleGlobalMouseUp = () => {
+        // 立即停止拖拽
+        isDraggingRef.current = false;
         setIsDragging(false);
+
+        // 移除所有相关事件监听器
         document.removeEventListener("mousemove", handleGlobalMouseMove);
         document.removeEventListener("mouseup", handleGlobalMouseUp);
+        document.removeEventListener("mouseleave", handleMouseLeave);
       };
 
-      document.addEventListener("mousemove", handleGlobalMouseMove);
-      document.addEventListener("mouseup", handleGlobalMouseUp);
+      const handleMouseLeave = () => {
+        // 鼠标离开窗口时也停止拖拽
+        handleGlobalMouseUp();
+      };
+
+      document.addEventListener("mousemove", handleGlobalMouseMove, {
+        passive: false,
+      });
+      document.addEventListener("mouseup", handleGlobalMouseUp, {
+        passive: false,
+      });
+      document.addEventListener("mouseleave", handleMouseLeave, {
+        passive: false,
+      });
     };
 
-    // 拖拽移动（保留用于容器内的移动事件）
-    const handleMouseMove = (e: React.MouseEvent) => {
-      if (!isDragging) return;
-      const newX = e.clientX - dragStart.x;
-      const newY = e.clientY - dragStart.y;
-      setPosition(getBoundedPosition(newX, newY));
-    };
-
-    // 结束拖拽
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
+    // 这些事件处理器不再需要，因为我们使用全局事件监听
 
     // 双击重置
     const handleDoubleClick = () => {
@@ -244,22 +250,18 @@ const ImagePreview = memo(
       if (e.touches.length === 1) {
         // 单指拖拽
         const touch = e.touches[0];
+        isDraggingRef.current = true;
         setIsDragging(true);
 
-        // 修复：计算相对于图片当前位置的偏移
+        // 计算相对于图片当前位置的偏移
         const dragStartX = touch.clientX - position.x;
         const dragStartY = touch.clientY - position.y;
-
-        // 保存到 ref 中，避免闭包问题
         dragStartRef.current = { x: dragStartX, y: dragStartY };
-
-        setDragStart({
-          x: dragStartX,
-          y: dragStartY,
-        });
 
         // 立即监听全局触摸移动和结束事件
         const handleGlobalTouchMove = (e: TouchEvent) => {
+          if (!isDraggingRef.current) return;
+
           if (e.touches.length === 1) {
             e.preventDefault();
             const touch = e.touches[0];
@@ -270,6 +272,7 @@ const ImagePreview = memo(
         };
 
         const handleGlobalTouchEnd = () => {
+          isDraggingRef.current = false;
           setIsDragging(false);
           document.removeEventListener("touchmove", handleGlobalTouchMove);
           document.removeEventListener("touchend", handleGlobalTouchEnd);
@@ -285,6 +288,7 @@ const ImagePreview = memo(
         const distance = getTouchDistance(e.touches);
         setLastTouchDistance(distance);
         setTouchStartScale(scale);
+        isDraggingRef.current = false;
         setIsDragging(false);
       }
     };
@@ -308,7 +312,6 @@ const ImagePreview = memo(
 
     const handleTouchEnd = (e: React.TouchEvent) => {
       if (e.touches.length === 0) {
-        setIsDragging(false);
         setLastTouchDistance(0);
       } else if (e.touches.length === 1) {
         setLastTouchDistance(0);
@@ -322,6 +325,9 @@ const ImagePreview = memo(
         // 防止背景页面滚动
         document.body.style.overflow = "hidden";
       } else {
+        // 重置拖拽状态
+        isDraggingRef.current = false;
+        setIsDragging(false);
         // 恢复页面滚动
         document.body.style.overflow = "auto";
       }
@@ -386,16 +392,13 @@ const ImagePreview = memo(
       return () => window.removeEventListener("resize", handleResize);
     }, [isOpen, scale, getBoundedPosition]);
 
-    // 组件卸载时清理所有事件监听器
+    // 当模态框关闭时立即清理拖拽状态
     useEffect(() => {
-      return () => {
-        // 清理可能残留的全局事件监听器
-        document.removeEventListener("mousemove", () => {});
-        document.removeEventListener("mouseup", () => {});
-        document.removeEventListener("touchmove", () => {});
-        document.removeEventListener("touchend", () => {});
-      };
-    }, []);
+      if (!isOpen) {
+        isDraggingRef.current = false;
+        setIsDragging(false);
+      }
+    }, [isOpen]);
 
     if (!isOpen || !currentImage) return null;
 
@@ -407,14 +410,9 @@ const ImagePreview = memo(
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
         onClick={onClose}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onContextMenu={(e) => e.preventDefault()}
-        style={{ pointerEvents: "all" }}
       >
         <motion.div
           ref={containerRef}
@@ -425,9 +423,7 @@ const ImagePreview = memo(
           className="relative w-full h-full flex items-center justify-center overflow-hidden"
           onWheel={handleWheel}
           onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-          onMouseUp={(e) => e.stopPropagation()}
-          style={{ pointerEvents: "all" }}
+          style={{ cursor: isDragging ? "grabbing" : "grab" }}
         >
           <img
             ref={imageRef}

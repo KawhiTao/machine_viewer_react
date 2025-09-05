@@ -17,11 +17,12 @@ import { lazy } from "react";
 const Home = lazy(() => import("@/pages/Home"));
 // const Auto = lazy(() => import("@/pages/auto"));
 const Demo = lazy(() => import("@/pages/demo"));
-const Review = lazy(() => import("@/pages/apps/review/Index"));
+const Review = lazy(() => import("@/pages/apps/review/index"));
 const AppMarket = lazy(() => import("@/pages/apps/AppMarket"));
 const Management = lazy(() => import("@/pages/management"));
 const AgentText = lazy(() => import("@/pages/agent/Text"));
 const LoginPage = lazy(() => import("@/pages/user/Login"));
+const RegisterPage = lazy(() => import("@/pages/user/Register"));
 
 // 路由配置类型定义
 export interface RouteConfig {
@@ -67,8 +68,20 @@ export const routesConfig: RouteConfig[] = [
     // icon: LoginIcon,
     component: LoginPage,
     meta: {
+      requireAuth: false, // 登录页面不需要认证
       keepAlive: true,
       order: 0,
+      showInSidebar: false,
+    },
+  },
+  {
+    path: "/register",
+    title: "注册",
+    component: RegisterPage,
+    meta: {
+      requireAuth: false, // 注册页面不需要认证
+      keepAlive: true,
+      order: 1,
       showInSidebar: false,
     },
   },
@@ -78,6 +91,7 @@ export const routesConfig: RouteConfig[] = [
     icon: HomeIcon,
     component: Home,
     meta: {
+      requireAuth: true,
       keepAlive: true,
       order: 1,
     },
@@ -89,6 +103,7 @@ export const routesConfig: RouteConfig[] = [
     // redirect: "/ai/text",
     component: AgentText,
     meta: {
+      requireAuth: true,
       keepAlive: true,
       order: 2,
     },
@@ -129,6 +144,7 @@ export const routesConfig: RouteConfig[] = [
     icon: UsersIcon,
     redirect: "/apps/preview",
     meta: {
+      requireAuth: true,
       keepAlive: true,
       order: 3,
     },
@@ -139,6 +155,7 @@ export const routesConfig: RouteConfig[] = [
         icon: BrainCircuitIcon,
         component: Review,
         meta: {
+          requireAuth: true,
           visible: true, // 设置为 false 可隐藏
           disabled: false, // 设置为 true 可禁用
         },
@@ -149,6 +166,7 @@ export const routesConfig: RouteConfig[] = [
         icon: FileTextIcon,
         // component: AiDocs, // 待创建
         meta: {
+          requireAuth: true,
           // disabled: true, // 功能未完成，暂时禁用
         },
       },
@@ -158,6 +176,7 @@ export const routesConfig: RouteConfig[] = [
         icon: AlertTriangleIcon,
         // component: Warning, // 待创建
         meta: {
+          requireAuth: true,
           // visible: false, // 暂时隐藏此功能
         },
       },
@@ -169,6 +188,7 @@ export const routesConfig: RouteConfig[] = [
     icon: BrainCircuitIcon,
     component: AppMarket,
     meta: {
+      requireAuth: true,
       keepAlive: true,
       visible: false,
       order: 4,
@@ -180,6 +200,7 @@ export const routesConfig: RouteConfig[] = [
     icon: UsersIcon,
     // component: Online, // 待创建
     meta: {
+      requireAuth: true,
       order: 5,
     },
   },
@@ -200,6 +221,7 @@ export const routesConfig: RouteConfig[] = [
     icon: BrainCircuitIcon,
     component: Demo,
     meta: {
+      requireAuth: true,
       hidden: true, // 在生产环境中隐藏
       environment: "development", // 只在开发环境显示
       order: 97,
@@ -211,6 +233,7 @@ export const routesConfig: RouteConfig[] = [
     icon: CircleHelpIcon,
     // component: Help, // 待创建
     meta: {
+      requireAuth: true,
       order: 98,
       showInSidebar: true, // 在侧边栏显示
       showInBreadcrumb: true, // 在面包屑显示
@@ -295,7 +318,58 @@ export const getRoutePathTitleMap = (): Record<string, string> => {
 // 工具函数：检查路由是否需要认证
 export const routeRequiresAuth = (path: string): boolean => {
   const route = getRouteByPath(path);
-  return route?.meta?.requireAuth || false;
+
+  // 对于子路由，需要递归检查父路由
+  if (!route) {
+    // 检查是否是子路由路径
+    const segments = path.split("/").filter(Boolean);
+    for (let i = segments.length - 1; i > 0; i--) {
+      const parentPath = "/" + segments.slice(0, i).join("/");
+      const parentRoute = getRouteByPath(parentPath);
+      if (parentRoute) {
+        // 找到了父路由，检查其子路由
+        const childRoute = findChildRoute(parentRoute, path);
+        if (childRoute) {
+          // 子路由存在，检查其认证要求，如果未设置则继承父路由
+          return (
+            childRoute.meta?.requireAuth !== false &&
+            (childRoute.meta?.requireAuth === true ||
+              parentRoute.meta?.requireAuth !== false)
+          );
+        }
+      }
+    }
+
+    // 如果找不到路由配置，默认需要认证（安全策略）
+    return true;
+  }
+
+  // 明确设置为 false 的路由不需要认证（如登录页）
+  if (route.meta?.requireAuth === false) {
+    return false;
+  }
+
+  // 默认需要认证，只有明确设置为 false 的才不需要
+  return true;
+};
+
+// 辅助函数：在路由的子路由中查找指定路径的路由
+const findChildRoute = (
+  parentRoute: RouteConfig,
+  targetPath: string,
+): RouteConfig | undefined => {
+  if (!parentRoute.children) return undefined;
+
+  for (const child of parentRoute.children) {
+    if (child.path === targetPath) {
+      return child;
+    }
+    // 递归查找子路由的子路由
+    const found = findChildRoute(child, targetPath);
+    if (found) return found;
+  }
+
+  return undefined;
 };
 
 // 工具函数：检查用户是否有访问路由的权限
